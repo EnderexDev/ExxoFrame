@@ -26,6 +26,13 @@ local HalfTime = os.clock()
 local SecondTime = os.clock()
 local MinuteTime = os.clock()
 
+local PackagesToIgnore = {
+	"TopBarPlus",
+	"WindLines",
+	"WindShake",
+	"ExxoFrame",
+}
+
 local ExxoFrame = {
 	GameVersion = game.PlaceVersion,
 
@@ -81,7 +88,8 @@ local function LoadDependencies()
 
 	if PackagesFolder then
 		for _,Package in PackagesFolder:GetChildren() do
-			if Package:IsA("ModuleScript") then
+
+			if not table.find(PackagesToIgnore, Package.Name) then
 				local PackageScript = require(Package)
 				ExxoFrame[Package.Name] = PackageScript
 			end
