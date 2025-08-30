@@ -1,0 +1,12 @@
+[package]
+name = "enderex/exxoframe"
+description = "Framework used by Enderex"
+license = "Apache-2.0"
+version = "0.0.1"
+authors = ["Bruno Macedo"]
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+exclude = ["rokit.toml"]
+
+[dependencies]
+
