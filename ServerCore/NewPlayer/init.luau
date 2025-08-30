@@ -130,8 +130,6 @@ function StartPlayer(Player : Player)
 		end)
 	end)
 
-	NewPlayer:AddBadge(1299253214951952)
-
 	if NewPlayer.Player.Character then
 		CharacterAdded(NewPlayer)
 	end

@@ -108,14 +108,6 @@ function PlayerConstructor:__init(PlayerInstance)
 		end
 	end)
 
-	local LeaderstatsFolder = ExxoFrame.Instance:NewFolder("leaderstats",PlayerInstance)
-	ExxoFrame.Instance:NewValue("PPC","string",ExxoFrame.Number:Abbreviate(0),LeaderstatsFolder)
-	ExxoFrame.Instance:NewValue("Power","string",ExxoFrame.Number:Abbreviate(0),LeaderstatsFolder)
-	ExxoFrame.Instance:NewValue("Stars","string",ExxoFrame.Number:Abbreviate(0),LeaderstatsFolder)
-
-	ExxoFrame.Instance:NewFolder(tostring(PlayerInstance.UserId),SoundService.Debris,true)
-	ExxoFrame.Instance:NewFolder(tostring(PlayerInstance.UserId),Workspace.Client.Debris.Drops, true)
-
 	if PlayerExtensions then
 		for _,Module in PlayerExtensions:GetChildren() do
 			local ModuleScript = require(Module)
