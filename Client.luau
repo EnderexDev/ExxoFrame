@@ -3,12 +3,13 @@
 --!optimize 2
 
 ---# MODULES #---
-local Signal = require(script.Parent:WaitForChild("Packages"):WaitForChild("Signal"))
-local BridgeNet2 = require(script.Parent:WaitForChild("Packages"):WaitForChild("BridgeNet2"))
-local Replica = require(script.Parent:WaitForChild("Packages"):WaitForChild("Replica"))
-local Promise = require(script.Parent:WaitForChild("Packages"):WaitForChild("Promise"))
+local Signal = require(script.Parent.Parent:WaitForChild("Signal"))
+local BridgeNet2 = require(script.Parent.Parent:WaitForChild("BridgeNet2"))
+local Replica = require(script.Parent.Parent:WaitForChild("Replica"))
+local Promise = require(script.Parent.Parent:WaitForChild("Promise"))
 local ClassConstructor = require(script.Parent.Shared:WaitForChild("ClassConstructor"))
 local ThreadHandler = require(script.Parent.Shared:WaitForChild("ThreadHandler"))
+local Output = require(script.Parent.Shared:WaitForChild("Output"))
 
 ---# SERVICES #---
 local Players = game:GetService("Players")
@@ -40,7 +41,8 @@ local ExxoFrame = {
 	Promise = Promise,
 	ClassConstructor = ClassConstructor,
 	ThreadHandler = ThreadHandler,
-	
+	Output = Output,
+
 	FastLoop = Signal.new(),
 	HalfLoop = Signal.new(),
 	SecondLoop = Signal.new(),
@@ -65,6 +67,12 @@ local ExxoFrame = {
 		Drops = {},
 	}
 }
+
+do
+	if RunService:IsClient() then
+		script.Parent.ServerCore:Destroy()
+	end
+end
 
 ---# SCRIPT #---
 local function LoadDependencies()

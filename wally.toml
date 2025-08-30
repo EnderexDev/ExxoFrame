@@ -2,7 +2,7 @@
 name = "enderexdev/exxoframe"
 description = "Framework used by Enderex"
 license = "Apache-2.0"
-version = "0.0.2"
+version = "0.0.5"
 authors = ["Bruno Macedo"]
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
@@ -14,3 +14,5 @@ Replica = "ayrezrblx/replica@0.1.9"
 Signal = "stackyzdev/signal@^1"
 Promise = "evaera/promise@4.0.0"
 
+[server-dependencies]
+ProfileStore = "vyon/profilestore@1.0.3"

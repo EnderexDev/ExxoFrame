@@ -11,7 +11,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 ---# MODULES #---
 local DataTemplate = require(script:WaitForChild("DefaultData")) 
-local ProfileStore = require(script:WaitForChild("ProfileStore"))
+local ProfileStore = require(script.Parent.Parent.ServerPackages:WaitForChild("ProfileStore"))
 local Profiles = require(ServerStorage:WaitForChild("ProfilesStorage"))
 
 ---~# VARIABLES #---

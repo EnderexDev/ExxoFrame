@@ -8,6 +8,7 @@ if RunService:IsRunning() and RunService:IsServer() then
 else
 	if script:FindFirstChild("Server") and RunService:IsRunning() then
 		script.Server:Destroy()
+		script.ServerCore:Destroy()
 	end
 	
 	return require(script.Client)
