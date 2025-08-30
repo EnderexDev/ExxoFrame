@@ -169,8 +169,8 @@ function module:GetAllPlayers()
 end
 
 function module:Init()
-	ExxoFrame.CollisionGroups:CreateCollisionGroup("Players")
-	ExxoFrame.CollisionGroups:DisableCollisions("Players","Players")
+	ExxoFrame.Utils.CollisionGroups:CreateCollisionGroup("Players")
+	ExxoFrame.Utils.CollisionGroups:DisableCollisions("Players","Players")
 end
 
 ---# CONNECTIONS #---

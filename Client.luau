@@ -10,6 +10,7 @@ local Promise = require(script.Parent.Parent:WaitForChild("Promise"))
 local ClassConstructor = require(script.Parent.Shared:WaitForChild("ClassConstructor"))
 local ThreadHandler = require(script.Parent.Shared:WaitForChild("ThreadHandler"))
 local Output = require(script.Parent.Shared:WaitForChild("Output"))
+local CollisionGroups = require(script.Parent.Shared:WaitForChild("CollisionGroups"))
 
 ---# SERVICES #---
 local Players = game:GetService("Players")
@@ -42,6 +43,7 @@ local ExxoFrame = {
 	ClassConstructor = ClassConstructor,
 	ThreadHandler = ThreadHandler,
 	Output = Output,
+	CollisionGroups = CollisionGroups,
 
 	FastLoop = Signal.new(),
 	HalfLoop = Signal.new(),
