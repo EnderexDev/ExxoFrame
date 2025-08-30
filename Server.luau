@@ -28,7 +28,7 @@ local SecondTime = os.clock()
 local MinuteTime = os.clock()
 
 local PackagesToIgnore = {
-	"TopBarPlus",
+	"TopbarPlus",
 	"WindLines",
 	"WindShake",
 	"ExxoFrame",

@@ -94,6 +94,10 @@ local function LoadDependencies()
 			if Package:IsA("ModuleScript") then
 				local PackageScript = require(Package)
 				ExxoFrame[Package.Name] = PackageScript
+
+				if PackageScript.Init then
+					PackageScript:Init()
+				end
 			end
 		end	
 	end
@@ -116,6 +120,41 @@ local function LoadShared()
 			if ModuleScript and ModuleScript.Init then
 				ModuleScript:Init()
 			end
+		end
+	end
+end
+
+local function LoadServices()
+
+	local ServicesFolder = StarterPlayer:WaitForChild("StarterPlayerScripts"):WaitForChild("Services")
+	ExxoFrame.Output.WarnAssert(not ServicesFolder,("Couldn't find Services folder, did you forget to create it?"))
+
+	if not ServicesFolder then return end
+	for _,Services in StarterPlayer:WaitForChild("StarterPlayerScripts"):WaitForChild("Services"):GetChildren() do
+		ExxoFrame.Output.ErrorAssert(not Services:IsA("ModuleScript"),("%* is not a Module Script!"):format(Services.Name))
+		ExxoFrame.Output.ErrorAssert(ExxoFrame.Services[Services.Name],("This module already exists, %*"):format(Services.Name))
+
+		local ModuleScript = require(Services)
+		ExxoFrame.Services[Services.Name] = ModuleScript
+
+		if not ModuleScript.NoBridge then
+			local RefBridge = ExxoFrame.BridgeNet2.ReferenceBridge(Services.Name)
+
+			local FunctionNameID = ExxoFrame.BridgeNet2.ReferenceIdentifier("FunctionName")
+			local FunctionContentID = ExxoFrame.BridgeNet2.ReferenceIdentifier("FunctionContent")
+		
+			RefBridge:Connect(function(Content)
+				ExxoFrame.Output.ErrorAssert(not Content[FunctionNameID],"Didn't got function name!")
+				ExxoFrame.Output.ErrorAssert(not ExxoFrame.Services[Services.Name][Content[FunctionNameID]],("%* function doesn't exist inside %*!"):format(Content[FunctionNameID],Services.Name))
+		
+				return ExxoFrame.Promise.try(function()
+					ExxoFrame.Services[Services.Name][Content[FunctionNameID]](table.unpack(Content[FunctionContentID]))
+				end)
+			end)
+		end
+
+		if ModuleScript.Init then
+			ModuleScript:Init()
 		end
 	end
 end
@@ -156,6 +195,7 @@ function ExxoFrame:Init()
 
 	LoadDependencies()
 	LoadShared()
+	LoadServices()
 
 	self.PlayerGui = self.LocalPlayer:WaitForChild("PlayerGui")
 	self.MainUI = self.PlayerGui:WaitForChild("MainUI")
@@ -174,49 +214,6 @@ function ExxoFrame:Init()
 			ModuleScript:Init()
 		end
 	end
-
-	-- self.Replica.OnChange(self.PlayerReplica,function(Action, ChangedPath, _, _)
-	-- 	if Action == "Set" then
-	-- 		ExxoFrame.RefreshHandler:DataChanged(ChangedPath)
-	-- 	end
-	-- end)
-
-	for _,Services in StarterPlayer:WaitForChild("StarterPlayerScripts"):WaitForChild("Services"):GetChildren() do
-		self.Output.ErrorAssert(not Services:IsA("ModuleScript"),("%* is not a Module Script!"):format(Services.Name))
-		self.Output.ErrorAssert(self.Services[Services.Name],("This module already exists, %*"):format(Services.Name))
-
-		local ModuleScript = require(Services)
-		self.Services[Services.Name] = ModuleScript
-
-		if not ModuleScript.NoBridge then
-			local RefBridge = ExxoFrame.BridgeNet2.ReferenceBridge(Services.Name)
-
-			local FunctionNameID = ExxoFrame.BridgeNet2.ReferenceIdentifier("FunctionName")
-			local FunctionContentID = ExxoFrame.BridgeNet2.ReferenceIdentifier("FunctionContent")
-		
-			RefBridge:Connect(function(Content)
-				ExxoFrame.Output.ErrorAssert(not Content[FunctionNameID],"Didn't got function name!")
-				ExxoFrame.Output.ErrorAssert(not self.Services[Services.Name][Content[FunctionNameID]],("%* function doesn't exist inside %*!"):format(Content[FunctionNameID],Services.Name))
-		
-				return ExxoFrame.Promise.try(function()
-					self.Services[Services.Name][Content[FunctionNameID]](table.unpack(Content[FunctionContentID]))
-				end)
-			end)
-		end
-
-		if ModuleScript.Init then
-			ModuleScript:Init()
-		end
-	end
-
-	self.WindShake:Init({})
-
-	self.WindLines:Init({
-		Lifetime = 2,
-		Speed = 8,
-		SpawnRate = 18
-	})
-
 end
 
 function ExxoFrame.Client:FireSelf(ModuleName : string, FunctionName : string, ...: any?)
