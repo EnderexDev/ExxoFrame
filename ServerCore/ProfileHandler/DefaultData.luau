@@ -1,3 +1,6 @@
+--!strict
+--!native
+--!optimize 2
 local ExxoFrame = {
 	
 	---# CURRENCIES #---

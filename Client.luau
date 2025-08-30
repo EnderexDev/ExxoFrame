@@ -3,7 +3,19 @@
 --!optimize 2
 
 ---# MODULES #---
-local GoodSignal = require(game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("GoodSignal"))
+local Signal = require(script.Parent:WaitForChild("Packages"):WaitForChild("Signal"))
+local BridgeNet2 = require(script.Parent:WaitForChild("Packages"):WaitForChild("BridgeNet2"))
+local Replica = require(script.Parent:WaitForChild("Packages"):WaitForChild("Replica"))
+local Promise = require(script.Parent:WaitForChild("Packages"):WaitForChild("Promise"))
+local ClassConstructor = require(script.Parent:WaitForChild("ClassConstructor"))
+
+---# SERVICES #---
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
 
 ---# VARIABLES #---
 local Started = false
@@ -16,24 +28,31 @@ local MinuteTime = os.clock()
 
 local ExxoFrame = {
 	GameVersion = game.PlaceVersion,
-	LocalPlayer = game.Players.LocalPlayer,
+	LocalPlayer = Players.LocalPlayer,
 
 	Client = {},
 	Server = {},
 
-	FastLoop = GoodSignal.new(),
-	HalfLoop = GoodSignal.new(),
-	SecondLoop = GoodSignal.new(),
-	MinuteLoop = GoodSignal.new(),
+	Signal = Signal,
+	BridgeNet2 = BridgeNet2,
+	Replica = Replica,
+	Promise = Promise,
+	ClassConstructor = ClassConstructor,
 
-	CharacterAdded = GoodSignal.new(),
-	CharacterRemoved = GoodSignal.new(),
+	FastLoop = Signal.new(),
+	HalfLoop = Signal.new(),
+	SecondLoop = Signal.new(),
+	MinuteLoop = Signal.new(),
 
-	ReferenceModules = {},
+	CharacterAdded = Signal.new(),
+	CharacterRemoved = Signal.new(),
+
+	Shared = {},
 	PetsByMap = {},
-	Components = {},
+	Services = {},
 	UserFrames = {},
 	Animations = {},
+	Utils = {},
 	Data = nil,
 
 	ServerShutdown = false,
@@ -47,27 +66,46 @@ local ExxoFrame = {
 
 ---# SCRIPT #---
 local function LoadDependencies()
-	ExxoFrame.Player = require(game:GetService("ReplicatedStorage"):WaitForChild("Library"):WaitForChild("PlayerUtil"))
-	ExxoFrame.Instance = require(game:GetService("ReplicatedStorage"):WaitForChild("Library"):WaitForChild("InstanceUtil"))
-	ExxoFrame.Frame = require(game:GetService("ReplicatedStorage"):WaitForChild("Library"):WaitForChild("FrameUtil"))
-	ExxoFrame.Number = require(game:GetService("ReplicatedStorage"):WaitForChild("Library"):WaitForChild("NumberUtil"))
-	ExxoFrame.Table = require(game:GetService("ReplicatedStorage"):WaitForChild("Library"):WaitForChild("TableUtil"))
-	ExxoFrame.CollisionGroups = require(game:GetService("ReplicatedStorage"):WaitForChild("Library"):WaitForChild("CollisionGroups"))
-	ExxoFrame.Colors = require(game:GetService("ReplicatedStorage"):WaitForChild("Library"):WaitForChild("Colors"))
-	ExxoFrame.GlobalSettings = require(game:GetService("ReplicatedStorage"):WaitForChild("Library"):WaitForChild("GlobalSettings"))
-	ExxoFrame.Sound = require(game:GetService("ReplicatedStorage"):WaitForChild("Library"):WaitForChild("SoundUtil"))
-	ExxoFrame.Effects = require(game:GetService("ReplicatedStorage"):WaitForChild("Library"):WaitForChild("EffectsUtil"))
-	ExxoFrame.Output = require(game:GetService("ReplicatedStorage"):WaitForChild("Library"):WaitForChild("Output"))
-	ExxoFrame.Pets = require(game:GetService("ReplicatedStorage"):WaitForChild("Library"):WaitForChild("PetsUtil"))
-	ExxoFrame.ThreadHandler = require(game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("ThreadHandler"))
-	ExxoFrame.Promise = require(game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("Promise"))
-	ExxoFrame.BridgeNet2 = require(game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("BridgeNet2"))
-	ExxoFrame.WindShake = require(game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("WindShake"))
-	ExxoFrame.WindLines = require(game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("WindLines"))
-	ExxoFrame.TopbarPlus = require(game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("TopbarPlus"))
-	ExxoFrame.GoodSignal = GoodSignal
-	ExxoFrame.Replica = require(game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("Replica"):WaitForChild("Client"))
-	ExxoFrame.SmoothShiftLock = require(game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("SmoothShiftLock"))
+	print("Loading Dependencies")
+
+	local UtilsFolder = ReplicatedStorage:FindFirstChild("Utils")
+	ExxoFrame.Output.WarnAssert(not UtilsFolder,("Couldn't find Utils folder, did you forget to create it?"))
+
+	if UtilsFolder then
+		for _,Utility in UtilsFolder:GetChildren() do
+			local UtilityScript = require(Utility)
+			ExxoFrame.Utils[Utility.Name] = UtilityScript
+		end
+	end
+
+	local PackagesFolder = ReplicatedStorage:FindFirstChild("Packages")
+	ExxoFrame.Output.WarnAssert(not PackagesFolder,("Couldn't find Packages folder, did you forget to create it?"))
+
+	if PackagesFolder then
+		for _,Package in PackagesFolder:GetChildren() do
+			local PackageScript = require(Package)
+			ExxoFrame[Package.Name] = PackageScript
+		end	
+	end
+
+	-- ExxoFrame.SmoothShiftLock = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("SmoothShiftLock"))
+end
+
+local function LoadShared()
+	local SharedFolder = ReplicatedStorage:FindFirstChild("Shared")
+	ExxoFrame.Output.WarnAssert(not SharedFolder,("Couldn't find Shared folder, did you forget to create it?"))
+
+	if not SharedFolder then return end
+	for _,SharedModule in SharedFolder:GetChildren() do
+		ExxoFrame.Output.ErrorAssert(not SharedModule:IsA("ModuleScript"),("%* is not a Module Script!"):format(SharedModule.Name))
+		ExxoFrame.Output.ErrorAssert(ExxoFrame.Shared[SharedModule.Name],("This module already exists, %*"):format(SharedModule.Name))
+
+		local ModuleScript = require(SharedModule)
+		ExxoFrame.Shared[SharedModule.Name] = ModuleScript
+		if ModuleScript and ModuleScript.Init then
+			ModuleScript:Init()
+		end
+	end
 end
 
 function ExxoFrame:Init()
@@ -81,26 +119,20 @@ function ExxoFrame:Init()
 	repeat
 		task.wait(0.1)
 	until
-	game:GetService("Workspace"):GetAttribute("ServerLoaded") == true
+	Workspace:GetAttribute("ServerLoaded") == true
 
 	self.StartTime = os.clock()
 	
-	LoadDependencies()
-	
-	self.Replica.OnNew("PlayerData", function(Replica)
+	self.Replica.OnNew("PlayerData", function(NewReplica)
 		
-		self.Data = Replica.Data
-		self.PlayerReplica = Replica
+		self.Data = NewReplica.Data
+		self.PlayerReplica = NewReplica
 	end)
 
-	self.Replica.OnNew("ExistingStuff", function(Replica)
-		self.ExistingData = Replica.Data
-		self.ExistingReplica = Replica
+	self.Replica.OnNew("ExistingStuff", function(NewReplica)
 
-		
-		-- ExxoFrame.ExistingReplica:OnChange(function(Action, ChangedPath, NewValue, OldValue)
-		-- 	print(Action,ChangedPath,NewValue,OldValue)
-		-- end)
+		self.ExistingData = NewReplica.Data
+		self.ExistingReplica = NewReplica
 	end)
 	
 	self.Replica.RequestData()
@@ -110,25 +142,16 @@ function ExxoFrame:Init()
 	until 
 		self.Data ~= nil
 
+	LoadDependencies()
+	LoadShared()
+
 	self.PlayerGui = self.LocalPlayer:WaitForChild("PlayerGui")
 	self.MainUI = self.PlayerGui:WaitForChild("MainUI")
 	self.MainFrames = self.MainUI:WaitForChild("MainFrames")
 	self.Inset = self.PlayerGui:WaitForChild("Inset")
 	self.HUD = self.PlayerGui:WaitForChild("HUD")
 
-	for _,ReferenceModule in game:GetService("ReplicatedStorage"):WaitForChild("ReferenceModules"):GetChildren() do
-		self.Output.ErrorAssert(not ReferenceModule:IsA("ModuleScript"),("%* is not a Module Script!"):format(ReferenceModule.Name))
-		self.Output.ErrorAssert(self.ReferenceModules[ReferenceModule.Name],("This module already exists, %*"):format(ReferenceModule.Name))
-
-		local ModuleScript = require(ReferenceModule)
-		self.ReferenceModules[ReferenceModule.Name] = ModuleScript
-
-		if ModuleScript.Init then
-			ModuleScript:Init()
-		end
-	end
-
-	for _,CoreScript in game:GetService("StarterPlayer"):WaitForChild("StarterPlayerScripts"):WaitForChild("Cores"):GetChildren() do
+	for _,CoreScript in StarterPlayer:WaitForChild("StarterPlayerScripts"):WaitForChild("Cores"):GetChildren() do
 		self.Output.ErrorAssert(not CoreScript:IsA("ModuleScript"),("%* is not a Module Script!"):format(CoreScript.Name))
 		self.Output.ErrorAssert(self[CoreScript.Name],("This module already exists, %*"):format(CoreScript.Name))
 		
@@ -146,25 +169,25 @@ function ExxoFrame:Init()
 	-- 	end
 	-- end)
 
-	for _,Component in game:GetService("StarterPlayer"):WaitForChild("StarterPlayerScripts"):WaitForChild("Components"):GetChildren() do
-		self.Output.ErrorAssert(not Component:IsA("ModuleScript"),("%* is not a Module Script!"):format(Component.Name))
-		self.Output.ErrorAssert(self.Components[Component.Name],("This module already exists, %*"):format(Component.Name))
+	for _,Services in StarterPlayer:WaitForChild("StarterPlayerScripts"):WaitForChild("Services"):GetChildren() do
+		self.Output.ErrorAssert(not Services:IsA("ModuleScript"),("%* is not a Module Script!"):format(Services.Name))
+		self.Output.ErrorAssert(self.Services[Services.Name],("This module already exists, %*"):format(Services.Name))
 
-		local ModuleScript = require(Component)
-		self.Components[Component.Name] = ModuleScript
+		local ModuleScript = require(Services)
+		self.Services[Services.Name] = ModuleScript
 
 		if not ModuleScript.NoBridge then
-			local RefBridge = ExxoFrame.BridgeNet2.ReferenceBridge(Component.Name)
+			local RefBridge = ExxoFrame.BridgeNet2.ReferenceBridge(Services.Name)
 
 			local FunctionNameID = ExxoFrame.BridgeNet2.ReferenceIdentifier("FunctionName")
 			local FunctionContentID = ExxoFrame.BridgeNet2.ReferenceIdentifier("FunctionContent")
 		
 			RefBridge:Connect(function(Content)
 				ExxoFrame.Output.ErrorAssert(not Content[FunctionNameID],"Didn't got function name!")
-				ExxoFrame.Output.ErrorAssert(not self.Components[Component.Name][Content[FunctionNameID]],("%* function doesn't exist inside %*!"):format(Content[FunctionNameID],Component.Name))
+				ExxoFrame.Output.ErrorAssert(not self.Services[Services.Name][Content[FunctionNameID]],("%* function doesn't exist inside %*!"):format(Content[FunctionNameID],Services.Name))
 		
 				return ExxoFrame.Promise.try(function()
-					self.Components[Component.Name][Content[FunctionNameID]](table.unpack(Content[FunctionContentID]))
+					self.Services[Services.Name][Content[FunctionNameID]](table.unpack(Content[FunctionContentID]))
 				end)
 			end)
 		end
@@ -191,7 +214,7 @@ function ExxoFrame.Client:FireSelf(ModuleName : string, FunctionName : string, .
 	ExxoFrame.Output.ErrorAssert(typeof(ModuleName) ~= "string","The given module name is not a string.")
 	ExxoFrame.Output.ErrorAssert(typeof(FunctionName) ~= "string","The given function name is not a string.")
 
-	local ModuleScript = ExxoFrame.Components[ModuleName]
+	local ModuleScript = ExxoFrame.Services[ModuleName]
 	ExxoFrame.Output.ErrorAssert(not ModuleScript,("The %* Module Script was not found!"):format(ModuleName))
 
 	local FunctionTable = ModuleScript[FunctionName]
@@ -224,11 +247,11 @@ end
 function ExxoFrame:GetDevice()
 	local Device = nil
 
-	if game:GetService("UserInputService").GamepadEnabled then
+	if UserInputService.GamepadEnabled then
 		Device = 'CONSOLE'
-	elseif game:GetService("UserInputService").KeyboardEnabled then
+	elseif UserInputService.KeyboardEnabled then
 		Device = 'PC'
-	elseif game:GetService("UserInputService").TouchEnabled then
+	elseif UserInputService.TouchEnabled then
 		Device = 'MOBILE'
 	end
 
@@ -236,7 +259,7 @@ function ExxoFrame:GetDevice()
 end
 
 function ExxoFrame:GetMouse()
-	return game:GetService("Players").LocalPlayer:GetMouse()
+	return self.LocalPlayer:GetMouse()
 end
 
 function ExxoFrame:GetCharacter()
@@ -308,7 +331,7 @@ end)
 
 ---# LOOPS #---
 
-game:GetService("RunService").PreRender:Connect(function()
+RunService.PreRender:Connect(function()
 	if (os.clock() - FastTime) >= task.wait() then
 		FastTime = os.clock()
 		ExxoFrame.FastLoop:Fire()

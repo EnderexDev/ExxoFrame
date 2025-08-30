@@ -2,7 +2,7 @@
 --!native
 --!optimize 2
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Library = ReplicatedStorage:WaitForChild("Library")
+local Utils = ReplicatedStorage:WaitForChild("Utils")
 
 export type PlayerGUI = typeof(game:GetService("StarterGui"))
 export type MainUI = typeof(game:GetService("StarterGui"):WaitForChild("MainUI"))
@@ -11,17 +11,18 @@ export type HUD = typeof(game:GetService("StarterGui"):WaitForChild("HUD"))
 export type Inset = typeof(game:GetService("StarterGui"):WaitForChild("Inset"))
 
 export type PlayerData = typeof(require(script.Parent.DefaultData))
-export type PlayerType = typeof(require(Library.PlayerUtil))
-export type InstanceType = typeof(require(Library.InstanceUtil))
-export type OutputType = typeof(require(Library.Output))
-export type NumberType = typeof(require(Library.NumberUtil))
-export type SoundType = typeof(require(Library.SoundUtil))
-export type TableType = typeof(require(Library.TableUtil))
-export type FrameType = typeof(require(Library.FrameUtil))
-export type CollisionGroupsType = typeof(require(Library.CollisionGroups))
-export type GlobalSettingsType = typeof(require(Library.GlobalSettings))
-export type EffectsType = typeof(require(Library.EffectsUtil))
-export type ColorsType = typeof(require(Library.Colors))
+export type PlayerUtil = typeof(require(Utils.Player))
+export type InstanceUtil = typeof(require(Utils.Instance))
+export type OutputUtil = typeof(require(Utils.Output))
+export type NumberUtil = typeof(require(Utils.Number))
+export type SoundUtil = typeof(require(Utils.Sound))
+export type TableUtil = typeof(require(Utils.Table))
+export type FrameUtil = typeof(require(Utils.Frame))
+export type CollisionGroupsUtil = typeof(require(Utils.CollisionGroups))
+export type GlobalSettingsUtil = typeof(require(Utils.GlobalSettings))
+export type EffectsUtil = typeof(require(Utils.Effects))
+export type ColorsUtil = typeof(require(Utils.Colors))
+
 export type NewPlayerType = typeof(require(game:GetService("ServerScriptService"):WaitForChild("Core"):WaitForChild("NewPlayer")))
 export type FramesControllerType = typeof(require(game:GetService("StarterPlayer"):WaitForChild("StarterPlayerScripts"):WaitForChild("Cores"):WaitForChild("FramesController")))
 

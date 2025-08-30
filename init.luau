@@ -1,3 +1,6 @@
+--!strict
+--!native
+--!optimize 2
 local RunService = game:GetService("RunService")
 
 if RunService:IsRunning() and RunService:IsServer() then
