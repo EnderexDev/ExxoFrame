@@ -89,7 +89,7 @@ local function LoadDependencies()
 	if PackagesFolder then
 		for _,Package in PackagesFolder:GetChildren() do
 
-			if not table.find(PackagesToIgnore, Package.Name) then
+			if Package:IsA("ModuleScript") and not table.find(PackagesToIgnore, Package.Name) then
 				local PackageScript = require(Package)
 				ExxoFrame[Package.Name] = PackageScript
 			end
