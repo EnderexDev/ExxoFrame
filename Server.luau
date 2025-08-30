@@ -40,12 +40,13 @@ local ExxoFrame = {
 	ThreadHandler = ThreadHandler,
 	PlayersCache = PlayersCache,
 	Output = Output,
-	
+
 	FastLoop = Signal.new(),
 	HalfLoop = Signal.new(),
 	SecondLoop = Signal.new(),
 	MinuteLoop = Signal.new(),
 
+	Utils = {},
 	Shared = {},
 	PetsByMap = {},
 	Services = {},
@@ -68,8 +69,10 @@ local function LoadDependencies()
 
 	if UtilsFolder then
 		for _,Utility in UtilsFolder:GetChildren() do
-			local UtilityScript = require(Utility)
-			ExxoFrame.Utils[Utility.Name] = UtilityScript
+			if Utility:IsA("ModuleScript") then
+				local UtilityScript = require(Utility)
+				ExxoFrame.Utils[Utility.Name] = UtilityScript
+			end
 		end
 	end
 
@@ -78,8 +81,10 @@ local function LoadDependencies()
 
 	if PackagesFolder then
 		for _,Package in PackagesFolder:GetChildren() do
-			local PackageScript = require(Package)
-			ExxoFrame[Package.Name] = PackageScript
+			if Package:IsA("ModuleScript") then
+				local PackageScript = require(Package)
+				ExxoFrame[Package.Name] = PackageScript
+			end
 		end	
 	end
 end
@@ -93,10 +98,12 @@ local function LoadShared()
 		ExxoFrame.Output.ErrorAssert(not SharedModule:IsA("ModuleScript"),("%* is not a Module Script!"):format(SharedModule.Name))
 		ExxoFrame.Output.ErrorAssert(ExxoFrame.Shared[SharedModule.Name],("This module already exists, %*"):format(SharedModule.Name))
 
-		local ModuleScript = require(SharedModule)
-		ExxoFrame.Shared[SharedModule.Name] = ModuleScript
-		if ModuleScript and ModuleScript.Init then
-			ModuleScript:Init()
+		if SharedModule:IsA("ModuleScript") then
+			local ModuleScript = require(SharedModule)
+			ExxoFrame.Shared[SharedModule.Name] = ModuleScript
+			if ModuleScript and ModuleScript.Init then
+				ModuleScript:Init()
+			end
 		end
 	end
 end
