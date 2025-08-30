@@ -7,7 +7,8 @@ local Signal = require(script.Parent:WaitForChild("Packages"):WaitForChild("Sign
 local BridgeNet2 = require(script.Parent:WaitForChild("Packages"):WaitForChild("BridgeNet2"))
 local Replica = require(script.Parent:WaitForChild("Packages"):WaitForChild("Replica"))
 local Promise = require(script.Parent:WaitForChild("Packages"):WaitForChild("Promise"))
-local ClassConstructor = require(script.Parent:WaitForChild("ClassConstructor"))
+local ClassConstructor = require(script.Parent.Shared:WaitForChild("ClassConstructor"))
+local ThreadHandler = require(script.Parent.Shared:WaitForChild("ThreadHandler"))
 
 ---# SERVICES #---
 local Players = game:GetService("Players")
@@ -38,7 +39,8 @@ local ExxoFrame = {
 	Replica = Replica,
 	Promise = Promise,
 	ClassConstructor = ClassConstructor,
-
+	ThreadHandler = ThreadHandler,
+	
 	FastLoop = Signal.new(),
 	HalfLoop = Signal.new(),
 	SecondLoop = Signal.new(),

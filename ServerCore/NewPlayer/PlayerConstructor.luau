@@ -14,7 +14,7 @@ local HttpService = game:GetService("HttpService")
 local LocalizationService = game:GetService("LocalizationService")
 
 ---# MODULES #---
-local ClassConstructor = require(script.Parent.Parent.Parent.Shared:WaitForChild("ClassConstructor"))
+local ClassConstructor = require(ExxoFrame.ClassConstructor)
 local ProfilesStorage = require(ServerStorage:WaitForChild("ProfilesStorage"))
 
 ---# VARIABLES #---

@@ -1,12 +1,15 @@
 --!strict
 --!native
 --!optimize 2
+
 ---# MODULES #---
 local Signal = require(script.Parent:WaitForChild("Packages"):WaitForChild("Signal"))
 local BridgeNet2 = require(script.Parent:WaitForChild("Packages"):WaitForChild("BridgeNet2"))
 local Replica = require(script.Parent:WaitForChild("Packages"):WaitForChild("Replica"))
 local Promise = require(script.Parent:WaitForChild("Packages"):WaitForChild("Promise"))
-local ClassConstructor = require(script.Parent:WaitForChild("ClassConstructor"))
+local ClassConstructor = require(script.Parent.Shared:WaitForChild("ClassConstructor"))
+local ThreadHandler = require(script.Parent.Shared:WaitForChild("ThreadHandler"))
+local PlayersCache = require(script.Parent.ServerCore:WaitForChild("NewPlayer"):WaitForChild("PlayerCache"))
 
 ---# SERVICES #---
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -33,7 +36,9 @@ local ExxoFrame = {
 	Replica = Replica,
 	Promise = Promise,
 	ClassConstructor = ClassConstructor,
-	
+	ThreadHandler = ThreadHandler,
+	PlayersCache = PlayersCache,
+
 	FastLoop = Signal.new(),
 	HalfLoop = Signal.new(),
 	SecondLoop = Signal.new(),
@@ -75,8 +80,6 @@ local function LoadDependencies()
 			ExxoFrame[Package.Name] = PackageScript
 		end	
 	end
-
-	ExxoFrame.PlayersCache = require(script.Parent:WaitForChild("PlayerCache"))
 end
 
 local function LoadShared()

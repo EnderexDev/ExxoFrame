@@ -87,7 +87,7 @@ Players.PlayerRemoving:Connect(function(player)
 	end
 end)
 
-ProfileStore.OnError:Connect(function(ErrorMessage,ProfileStore,ProfileKey)
+ProfileStore.OnError:Connect(function(ErrorMessage,_,ProfileKey)
 	local PlayerID = string.gsub(ProfileKey,"P_","")
 	if not PlayerID then return end
 
@@ -107,7 +107,7 @@ ProfileStore.OnError:Connect(function(ErrorMessage,ProfileStore,ProfileKey)
 	end
 end)
 
-ProfileStore.OnOverwrite:Connect(function(ProfileStore,ProfileKey)
+ProfileStore.OnOverwrite:Connect(function(_,ProfileKey)
 	local PlayerID = string.gsub(ProfileKey,"P_","")
 	if not PlayerID then return end
 
