@@ -15,7 +15,6 @@ local CollisionGroups = require(script.Parent.Shared:WaitForChild("CollisionGrou
 
 ---# SERVICES #---
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerScriptService = game:GetService("ServerScriptService")
 local RunService = game:GetService("RunService")
 
 ---# VARIABLES #---
