@@ -131,7 +131,7 @@ end
 local function LoadControllers()
 	for _,CoreScript in StarterPlayer:WaitForChild("StarterPlayerScripts"):WaitForChild("Controllers"):GetChildren() do
 		ExxoFrame.Output.ErrorAssert(not CoreScript:IsA("ModuleScript"),("%* is not a Module Script!"):format(CoreScript.Name))
-		ExxoFrame.Output.ErrorAssert(ExxoFrame.Controllers[CoreScript.Name],("This module already exists, %*"):format(CoreScript.Name))
+		ExxoFrame.Output.ErrorAssert(ExxoFrame[CoreScript.Name],("This module already exists, %*"):format(CoreScript.Name))
 		
 		local ModuleScript = require(CoreScript)
 		ExxoFrame[CoreScript.Name] = ModuleScript
@@ -144,29 +144,31 @@ end
 
 local function LoadServices()
 
-	local ServicesFolder = StarterPlayer:WaitForChild("StarterPlayerScripts"):WaitForChild("Services")
+	local ServicesFolder = ReplicatedStorage:FindFirstChild("Services")
 	ExxoFrame.Output.WarnAssert(not ServicesFolder,("Couldn't find Services folder, did you forget to create it?"))
 
 	if not ServicesFolder then return end
-	for _,Services in StarterPlayer:WaitForChild("StarterPlayerScripts"):WaitForChild("Services"):GetChildren() do
-		ExxoFrame.Output.ErrorAssert(not Services:IsA("ModuleScript"),("%* is not a Module Script!"):format(Services.Name))
-		ExxoFrame.Output.ErrorAssert(ExxoFrame.Services[Services.Name],("This module already exists, %*"):format(Services.Name))
+	for _,Service in ServicesFolder:GetChildren() do
+		local TrueName = Service.Name:gsub("Service", "")
+		
+		ExxoFrame.Output.ErrorAssert(not Service:IsA("ModuleScript"),("%* is not a Module Script!"):format(TrueName))
+		ExxoFrame.Output.ErrorAssert(ExxoFrame.Services[TrueName],("This module already exists, %*"):format(TrueName))
 
-		local ModuleScript = require(Services)
-		ExxoFrame.Services[Services.Name] = ModuleScript
+		local ModuleScript = require(Service)
+		ExxoFrame.Services[TrueName] = ModuleScript
 
 		if not ModuleScript.NoBridge then
-			local RefBridge = ExxoFrame.BridgeNet2.ReferenceBridge(Services.Name)
+			local RefBridge = ExxoFrame.BridgeNet2.ReferenceBridge(TrueName)
 
 			local FunctionNameID = ExxoFrame.BridgeNet2.ReferenceIdentifier("FunctionName")
 			local FunctionContentID = ExxoFrame.BridgeNet2.ReferenceIdentifier("FunctionContent")
 		
 			RefBridge:Connect(function(Content)
 				ExxoFrame.Output.ErrorAssert(not Content[FunctionNameID],"Didn't got function name!")
-				ExxoFrame.Output.ErrorAssert(not ExxoFrame.Services[Services.Name][Content[FunctionNameID]],("%* function doesn't exist inside %*!"):format(Content[FunctionNameID],Services.Name))
+				ExxoFrame.Output.ErrorAssert(not ExxoFrame.Services[TrueName][Content[FunctionNameID]],("%* function doesn't exist inside %*!"):format(Content[FunctionNameID],TrueName))
 		
 				return ExxoFrame.Promise.try(function()
-					ExxoFrame.Services[Services.Name][Content[FunctionNameID]](table.unpack(Content[FunctionContentID]))
+					ExxoFrame.Services[TrueName][Content[FunctionNameID]](table.unpack(Content[FunctionContentID]))
 				end)
 			end)
 		end

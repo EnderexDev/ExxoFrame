@@ -138,45 +138,47 @@ local function LoadCore()
 end
 
 local function LoadServices()
-	local ServicesFolder = ServerScriptService:FindFirstChild("Services")
+	local ServicesFolder = ReplicatedStorage:FindFirstChild("Services")
 	ExxoFrame.Output.WarnAssert(not ServicesFolder,("Couldn't find Services folder, did you forget to create it?"))
 
 	if not ServicesFolder then return end
 
 	for _,Service in ServicesFolder:GetChildren() do
-		ExxoFrame.Output.ErrorAssert(not Service:IsA("ModuleScript"),("%* is not a Module Script!"):format(Service.Name))
-		ExxoFrame.Output.ErrorAssert(ExxoFrame.Services[Service.Name],("This module already exists, %*"):format(Service.Name))
+		local TrueName = Service.Name:gsub("Service", "")
+
+		ExxoFrame.Output.ErrorAssert(not Service:IsA("ModuleScript"),("%* is not a Module Script!"):format(TrueName))
+		ExxoFrame.Output.ErrorAssert(ExxoFrame.Services[TrueName],("This module already exists, %*"):format(TrueName))
 
 		local ModuleScript = require(Service)
-		ExxoFrame.Services[Service.Name] = ModuleScript
+		ExxoFrame.Services[TrueName] = ModuleScript
 
 		if not ModuleScript.NoBridge then
-			local RefBridge = ExxoFrame.BridgeNet2.ReferenceBridge(Service.Name)
+			local RefBridge = ExxoFrame.BridgeNet2.ReferenceBridge(TrueName)
 
 			local FunctionNameID = ExxoFrame.BridgeNet2.ReferenceIdentifier("FunctionName")
 			local FunctionContentID = ExxoFrame.BridgeNet2.ReferenceIdentifier("FunctionContent")
 		
 			RefBridge:Connect(function(Player, Content)
 				ExxoFrame.Output.ErrorAssert(not Content[FunctionNameID],"Didn't got function name!")
-				ExxoFrame.Output.ErrorAssert(not ExxoFrame.Services[Service.Name][Content[FunctionNameID]],("%* function doesn't exist inside %*!"):format(Content[FunctionNameID],Service.Name))
+				ExxoFrame.Output.ErrorAssert(not ExxoFrame.Services[TrueName][Content[FunctionNameID]],("%* function doesn't exist inside %*!"):format(Content[FunctionNameID],TrueName))
 		
-				if ExxoFrame.Services[Service.Name][Content[FunctionNameID]].Cooldown then
-					if not ExxoFrame.Services[Service.Name][Content[FunctionNameID]].Debounces then
-						ExxoFrame.Services[Service.Name][Content[FunctionNameID]].Debounces = {}
+				if ExxoFrame.Services[TrueName][Content[FunctionNameID]].Cooldown then
+					if not ExxoFrame.Services[TrueName][Content[FunctionNameID]].Debounces then
+						ExxoFrame.Services[TrueName][Content[FunctionNameID]].Debounces = {}
 					end
 		
-					if ExxoFrame.Services[Service.Name][Content[FunctionNameID]].Debounces[Player.UserId] then return end
-					ExxoFrame.Services[Service.Name][Content[FunctionNameID]].Debounces[Player.UserId] = true
+					if ExxoFrame.Services[TrueName][Content[FunctionNameID]].Debounces[Player.UserId] then return end
+					ExxoFrame.Services[TrueName][Content[FunctionNameID]].Debounces[Player.UserId] = true
 		
-					task.delay(ExxoFrame.Services[Service.Name][Content[FunctionNameID]].Cooldown, function()
-						ExxoFrame.Services[Service.Name][Content[FunctionNameID]].Debounces[Player.UserId] = nil
+					task.delay(ExxoFrame.Services[TrueName][Content[FunctionNameID]].Cooldown, function()
+						ExxoFrame.Services[TrueName][Content[FunctionNameID]].Debounces[Player.UserId] = nil
 					end)
 				end
 
 				local ExxoPlayer = ExxoFrame.NewPlayer:GetPlayer(Player)
 		
 				return ExxoFrame.Promise.try(function()
-					ExxoFrame.Services[Service.Name][Content[FunctionNameID]].Trigger(ExxoPlayer,table.unpack(Content[FunctionContentID]))
+					ExxoFrame.Services[TrueName][Content[FunctionNameID]].Trigger(ExxoPlayer,table.unpack(Content[FunctionContentID]))
 				end)
 			end)
 		end

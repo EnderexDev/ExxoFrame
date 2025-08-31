@@ -2,7 +2,7 @@
 name = "enderexdev/exxoframe"
 description = "Framework used by Enderex"
 license = "Apache-2.0"
-version = "0.0.20"
+version = "0.0.22"
 authors = ["Bruno Macedo"]
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
